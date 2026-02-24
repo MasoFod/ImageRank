@@ -5,7 +5,7 @@
 ## 目录
 1. 概述
 2. 数据库结构
-3. 后端逻辑 (api.php)
+3. 后端逻辑 (api.php / thumb/php)
 4. 前端结构 (index.php / style.css / script.js)
 5. ELO 算法说明
 6. IP 限流机制
@@ -67,7 +67,17 @@ INSERT INTO images(path) VALUES('img/1.jpg'),('img/2.jpg');
 // 示例请求: thumb.php?src=img/1.jpg&w=300
 ```
 
-## 4. 前端结构
+### 图片选择优先级
+
+为了让参与次数较少的图片更快进入对决，`pair` 接口使用了如下 SQL：
+
+```sql
+SELECT id, path FROM images ORDER BY RAND()/(plays+1) DESC LIMIT 2;
+```
+
+这个公式会让 `plays` 少的行返回更高的排序权重，从而优先被选中。
+
+## 4. 前端结构 (index.php / style.css / script.js)
 
 ### index.php
 
@@ -91,18 +101,6 @@ INSERT INTO images(path) VALUES('img/1.jpg'),('img/2.jpg');
 前后端通信均使用 Fetch API，未引入外部 JS 库。
 
 为减少网络负荷和加快加载，前端投票和排行榜均使用由后端 `thumb.php` 动态生成的缩略图。原始大图仅在模态打开时加载。
-
-## 5. ELO 算法说明
-
-### 图片抽取策略
-
-为了让参与次数较少的图片更快进入对决，`pair` 接口使用了如下 SQL：
-
-```sql
-SELECT id, path FROM images ORDER BY RAND()/(plays+1) DESC LIMIT 2;
-```
-
-这个公式会让 `plays` 少的行返回更高的排序权重，从而优先被选中。
 
 ## 5. ELO 算法说明
 
