@@ -1,0 +1,177 @@
+/* style.css - 深色主题 + 霓虹色强调 */
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0a0f2c;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+#container {
+    display: flex;
+    height: 100vh;
+}
+
+#sidebar {
+    width: 200px;
+    background: #111539;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+}
+
+#sidebar h2 {
+    margin: 0 0 10px 0;
+    color: #39ff14;
+    font-size: 16px;
+}
+
+#sidebar button.refreshBtn {
+    background: none;
+    border: 1px solid #39ff14;
+    color: #39ff14;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    font-size: 12px;
+}
+#sidebar button.refreshBtn:hover {
+    background: rgba(57,255,20,0.1);
+}
+
+#leaderboard {
+    margin-top: 20px;
+    width: 100%;
+    font-size: 14px;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#leaderboard .lb-item {
+    width: 90%;
+    margin: 5px 0;
+    cursor: pointer;
+}
+#leaderboard .lb-item img {
+    width: 100%;
+    display: block;
+    border: 2px solid transparent;
+    transition: box-shadow 0.2s;
+}
+#leaderboard .lb-item img:hover {
+    box-shadow: 0 0 10px #39ff14;
+}
+.hidden { display: none !important; }
+
+#main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#main .controls {
+    margin-bottom: 30px;
+}
+
+#main .image-slots {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+#pageHeader {
+    background: #111539;
+    padding: 10px;
+    text-align: center;
+}
+#pageHeader h1 {
+    margin: 0;
+    color: #39ff14;
+    font-size: 24px;
+}
+
+#pageFooter {
+    background: #111539;
+    padding: 5px;
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.image-slot {
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden; /* 防止图片溢出遮挡按钮 */
+}
+
+.voteBtn {
+    position: absolute;
+    bottom: 20px;
+    z-index: 3; /* 在预览图之上，但低于模态 */
+    background: rgba(57,255,20,0.8);
+    border: none;
+    color: #000;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.voteBtn:hover {
+    background: rgba(57,255,20,1);
+}
+
+.image-slot img {
+    max-width: 80%;
+    max-height: 80%;
+    border: 2px solid transparent;
+    transition: transform 0.3s, box-shadow 0.3s, opacity 0.5s;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.image-slot img.loaded {
+    opacity: 1;
+}
+
+.image-slot img:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px #39ff14;
+}
+
+/* 模态 */
+#modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10; /* 在投票按钮之上 */
+}
+#modalBg {
+    position: absolute;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 4;
+}
+#modalImg {
+    max-width: 90%;
+    max-height: 90%;
+    z-index: 5;
+}
