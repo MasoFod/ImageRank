@@ -18,28 +18,66 @@ try {
 $action = $_REQUEST['action'] ?? '';
 
 if ($action === 'pair') {
-    $sql = "
-        (SELECT id, path FROM images ORDER BY plays +(RAND() * 2000) ASC LIMIT 1)
-        UNION ALL
-        (SELECT id, path FROM images ORDER BY plays + (RAND() * 2000) DESC LIMIT 1)
-    ";
-    
-    $stmt = $pdo->query($sql);
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // 如果选到了两张一样的（例如数据库只有一张图），尝试修正
-    if (count($rows) === 2 && $rows[0]['id'] === $rows[1]['id']) {
-        // 尝试获取一张不同的图
-        $stmt = $pdo->prepare('SELECT id, path FROM images WHERE id != ? ORDER BY RAND() LIMIT 1');
-        $stmt->execute([$rows[0]['id']]);
-        $diff = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($diff) {
-            $rows[1] = $diff;
-        }
-        // 如果没有不同的图，保持两张一样的（前端应能处理或用户需添加图片）
+    // 1. 获取所有图片并按分数 (elo) 排序
+    $stmt = $pdo->query('SELECT id, path, elo, plays FROM images ORDER BY elo ASC');
+    $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $total = count($images);
+
+    // 如果图片不足两张，直接返回
+    if ($total < 2) {
+        echo json_encode($images);
+        exit;
     }
-    
-    echo json_encode($rows);
+
+    // 创建一个索引数组，用于按 plays 排序以找到最少被展示的图片
+    $indices = range(0, $total - 1);
+    usort($indices, function($a, $b) use ($images) {
+        return $images[$a]['plays'] <=> $images[$b]['plays'];
+    });
+
+    // --- 选择第一张图片 ---
+    // 逻辑：80% 概率从对决次数最少的 50% 图片中选，20% 概率完全随机
+    $idx1 = 0;
+    if (mt_rand(0, 99) < 20) {
+        // 完全随机
+        $idx1 = mt_rand(0, $total - 1);
+    } else {
+        // 从对决次数最少的一半图片中随机选一张
+        $poolSize = (int)($total * 0.5);
+        if ($poolSize < 1) $poolSize = 1;
+        $randPos = mt_rand(0, $poolSize - 1);
+        $idx1 = $indices[$randPos];
+    }
+
+    // --- 选择第二张图片 ---
+    // 逻辑：90% 概率从第一张图的分数邻近范围选，10% 概率完全随机
+    $idx2 = 0;
+    if (mt_rand(0, 99) < 10) {
+        // 完全随机，确保不与第一张相同
+        do {
+            $idx2 = mt_rand(0, $total - 1);
+        } while ($idx2 === $idx1);
+    } else {
+        // 邻近范围选择：前后 10% 或至少 5 个位置
+        $range = max(5, (int)($total * 0.1));
+        $min = max(0, $idx1 - $range);
+        $max = min($total - 1, $idx1 + $range);
+
+        // 在范围内随机选择，确保不与第一张相同
+        // 如果范围内只有一张图（即第一张图本身），则回退到完全随机
+        if ($max > $min) {
+            do {
+                $idx2 = mt_rand($min, $max);
+            } while ($idx2 === $idx1);
+        } else {
+            do {
+                $idx2 = mt_rand(0, $total - 1);
+            } while ($idx2 === $idx1);
+        }
+    }
+
+    // 返回选中的两张图
+    echo json_encode([$images[$idx1], $images[$idx2]]);
     exit;
 }
 

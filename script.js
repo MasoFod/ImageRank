@@ -1,4 +1,50 @@
-// script.js - 前端逻辑: 获取对决、投票、排行榜、模态
+// script.js - 前端逻辑: 获取对决、投票、排行榜、模态、多语言
+
+// 语言包
+const i18n = {
+    zh: {
+        title: "图片对决评分系统",
+        subtitle: "点击按钮为您喜欢的图片投票，或点击图片查看大图。",
+        shuffle: "换一组",
+        voteLeft: "投给左边",
+        voteRight: "投给右边",
+        refresh: "刷新",
+        leaderboard: "排行榜",
+        voteSuccess: "投票成功！",
+        close: "关闭",
+        notEnough: "图片数量不足，请添加至少两张图片。",
+        error: "错误",
+        networkError: "网络错误",
+        voteFailed: "投票失败"
+    },
+    en: {
+        title: "Image Ranking System",
+        subtitle: "Click the button to vote for your favorite image, or click the image to view it large.",
+        shuffle: "Shuffle",
+        voteLeft: "Vote Left",
+        voteRight: "Vote Right",
+        refresh: "Refresh",
+        leaderboard: "Leaderboard",
+        voteSuccess: "Vote Successful!",
+        close: "Close",
+        notEnough: "Not enough images. Please add at least two images.",
+        error: "Error",
+        networkError: "Network Error",
+        voteFailed: "Vote Failed"
+    }
+};
+
+let currentLang = 'zh';
+
+function setLanguage(lang) {
+    currentLang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[lang][key]) {
+            el.textContent = i18n[lang][key];
+        }
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const img1 = document.getElementById('img1');
@@ -13,6 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // 投票成功模态元素
     const successModal = document.getElementById('successModal');
     const closeSuccessModalBtn = document.getElementById('closeSuccessModal');
+
+    // 语言切换
+    const langSelect = document.getElementById('langSelect');
+    langSelect.addEventListener('change', (e) => {
+        setLanguage(e.target.value);
+    });
+    // 初始化语言
+    setLanguage('zh');
 
     let currentPair = [];
 
@@ -38,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     img1.src = '';
                     img2.src = '';
-                    alert('图片数量不足，请添加至少两张图片。');
+                    alert(i18n[currentLang].notEnough);
                 }
             });
     }
@@ -63,10 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     slot1.style.opacity = 0.5;
                     slot2.style.opacity = 0.5;
                 } else {
-                    alert(body.error || '投票失败');
+                    alert((body && body.error) ? body.error : i18n[currentLang].voteFailed);
                 }
             })
-            .catch(() => alert('网络错误'));
+            .catch(() => alert(i18n[currentLang].networkError));
     }
 
     // 点击图片打开大图模态（使用原始路径）
