@@ -42,6 +42,14 @@
     <img id="modalImg" src="" alt="大图">
 </div>
 
+<div id="successModal" class="hidden">
+    <div id="successModalBg"></div>
+    <div id="successModalContent">
+        <h2>投票成功！</h2>
+        <button id="closeSuccessModal">关闭</button>
+    </div>
+</div>
+
 <script src="script.js"></script>
 </body>
 </html>

@@ -18,15 +18,33 @@ try {
 $action = $_REQUEST['action'] ?? '';
 
 if ($action === 'pair') {
-    // 随机返回两张图片，同时优先挑选参评次数较少的
-    $stmt = $pdo->query('SELECT id, path FROM images ORDER BY RAND()/(plays+1) DESC LIMIT 2');
+    $sql = "
+        (SELECT id, path FROM images ORDER BY plays +(RAND() * 2000) ASC LIMIT 1)
+        UNION ALL
+        (SELECT id, path FROM images ORDER BY plays + (RAND() * 2000) DESC LIMIT 1)
+    ";
+    
+    $stmt = $pdo->query($sql);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // 如果选到了两张一样的（例如数据库只有一张图），尝试修正
+    if (count($rows) === 2 && $rows[0]['id'] === $rows[1]['id']) {
+        // 尝试获取一张不同的图
+        $stmt = $pdo->prepare('SELECT id, path FROM images WHERE id != ? ORDER BY RAND() LIMIT 1');
+        $stmt->execute([$rows[0]['id']]);
+        $diff = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($diff) {
+            $rows[1] = $diff;
+        }
+        // 如果没有不同的图，保持两张一样的（前端应能处理或用户需添加图片）
+    }
+    
     echo json_encode($rows);
     exit;
 }
 
 if ($action === 'leaderboard') {
-    $stmt = $pdo->query('SELECT id, path, elo, wins, plays FROM images ORDER BY elo DESC');
+    $stmt = $pdo->query('SELECT id, path, elo, wins, plays FROM images ORDER BY elo DESC LIMIT 10');
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode($rows);
     exit;

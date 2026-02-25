@@ -9,6 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal');
     const modalImg = document.getElementById('modalImg');
     const modalBg = document.getElementById('modalBg');
+    
+    // 投票成功模态元素
+    const successModal = document.getElementById('successModal');
+    const closeSuccessModalBtn = document.getElementById('closeSuccessModal');
 
     let currentPair = [];
 
@@ -53,14 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(r => r.json().then(res => ({status: r.status, body: res})))
             .then(({status, body}) => {
                 if (status === 200 && body.success) {
-                    // 小过渡
+                    // 显示投票成功模态
+                    successModal.classList.remove('hidden');
+                    // 稍微淡化当前图片
                     slot1.style.opacity = 0.5;
                     slot2.style.opacity = 0.5;
-                    setTimeout(() => {
-                        slot1.style.opacity = 1;
-                        slot2.style.opacity = 1;
-                        loadPair();
-                    }, 300);
                 } else {
                     alert(body.error || '投票失败');
                 }
@@ -88,6 +89,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     modalBg.addEventListener('click', () => {
         modal.classList.add('hidden');
+    });
+
+    // 关闭投票成功模态并加载下一组
+    closeSuccessModalBtn.addEventListener('click', () => {
+        successModal.classList.add('hidden');
+        slot1.style.opacity = 1;
+        slot2.style.opacity = 1;
+        loadPair();
     });
 
     // 自动加载排行榜
